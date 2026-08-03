@@ -171,17 +171,24 @@ class _GravadorConsultaScreenState
                     _consultasSalvas.length,
                 itemBuilder:
                     (context, index) {
-                  return Card(
-                    margin:
-                        const EdgeInsets.symmetric(
-                      vertical: 6,
-                    ),
-                    elevation: 2,
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.record_voice_over,
-                        color: Colors.indigo,
+                  return InkWell(
+                    onTap: () async {
+                      await ServicoVoz.inicializar();
+
+                      await ServicoVoz.falar(
+                        _consultasSalvas[index],
+                      );
+                    },
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(
+                        vertical: 6,
                       ),
+                      elevation: 2,
+                      child: ListTile(
+                         leading: const Icon(
+                             Icons.record_voice_over,
+                             color: Colors.indigo,
+                           ),
                       title: Text(
                         _consultasSalvas[index],
                         style:
@@ -191,27 +198,85 @@ class _GravadorConsultaScreenState
                               Colors.black87,
                         ),
                       ),
-                      trailing:
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           IconButton(
-                        icon: const Icon(
-                          Icons.volume_up,
-                          color:
-                              Colors.blueGrey,
-                        ),
-                        onPressed:
-                            () async {
-                          await ServicoVoz
-                              .inicializar();
+                            icon: const Icon(
+                              Icons.volume_up,
+                              color: Colors.blueGrey,
+                           ),
+                            onPressed: () async {
+                              await ServicoVoz.inicializar();
 
-                          await ServicoVoz
-                              .falar(
-                            _consultasSalvas[
-                                index],
-                          );
-                        },
+                              await ServicoVoz.falar(
+                                _consultasSalvas[index],
+                              );
+                            },    
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete,
+                              color: Colors.red,
+                            ),
+                            onPressed: () async {
+                              final confirmar =
+                                  await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: const Text(
+                                          "Excluir consulta",
+                                        ),
+                                        content: const Text(
+                                          "Deseja excluir esta anotação?",
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(
+                                                context,
+                                                false,
+                                              );
+                                            },
+                                            child: const Text(
+                                              "Cancelar",
+                                            ),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.pop(
+                                                context,
+                                                true,
+                                              );
+                                            },
+                                            child: const Text(
+                                              "Excluir",
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                              if (confirmar == true) {
+                                setState(() {
+                                  _consultasSalvas.removeAt(
+                                    index,
+                                  );
+                                });
+                                await ServicoVoz.inicializar();
+
+                                await ServicoVoz.falar(
+                                  "Consulta excluída com sucesso.",
+                                );  
+                              }
+                            },
+                          ),    
+                         ],
                       ),
                     ),
-                  );
+                  ),
+                );
                 },
               ),
             ),
